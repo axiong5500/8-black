@@ -424,16 +424,22 @@ function showOverlay(){
 function canvasPos(e){
   const r = canvas.getBoundingClientRect();
   const src = (e.touches && e.touches.length) ? e.touches[0] : e;
-  return { x:(src.clientX-r.left)*W/r.width, y:(src.clientY-r.top)*H/r.height };
+  const cx = src.clientX!=null?src.clientX:0, cy = src.clientY!=null?src.clientY:0;
+  return { x:(cx-r.left)*W/r.width, y:(cy-r.top)*H/r.height };
 }
 
-// 按下：开始蓄力（鼠标左键 / 单指触屏）
+let pointerDown = false;   // 指针是否处于按下状态（兜底标记）
+
+// 按下：开始蓄力（鼠标左键 / 单指触屏 / 指针）
 function pressStart(e){
+  // 触屏/非左键直接忽略；左键 button===0
+  if(e.button!=null && e.button!==0) return;
   if(ballsMoving()) return;
   if(e.cancelable) e.preventDefault();
   const p = canvasPos(e);
   aimAngle = Math.atan2(p.y-cue.y, p.x-cue.x);
   aiming = true;
+  pointerDown = true;
   power = 0;
   holdStart = performance.now();
 }
@@ -445,9 +451,10 @@ function pressMove(e){
 }
 // 松开：出杆
 function pressEnd(e){
-  if(!aiming) return;
+  if(!aiming && !pointerDown) return;
   if(e && e.cancelable) e.preventDefault();
   aiming = false;
+  pointerDown = false;
   if(!ballsMoving()){
     // 轻点也给一个最小力度，避免点一下完全没反应；按住越久力度越大
     const p = Math.max(power, 0.25);
@@ -460,14 +467,21 @@ function pressEnd(e){
   power = 0;
 }
 
+// 按下绑在画布，移动/抬起绑在 window，避免拖出画布后丢抬起事件
 canvas.addEventListener('mousedown', pressStart);
-canvas.addEventListener('mousemove', pressMove);
+window.addEventListener('mousemove', pressMove);
 window.addEventListener('mouseup', pressEnd);
+window.addEventListener('blur', pressEnd);
 // 触屏等价路径
 canvas.addEventListener('touchstart', pressStart, {passive:false});
-canvas.addEventListener('touchmove', pressMove, {passive:false});
-canvas.addEventListener('touchend', pressEnd, {passive:false});
-canvas.addEventListener('touchcancel', pressEnd, {passive:false});
+window.addEventListener('touchmove', pressMove, {passive:false});
+window.addEventListener('touchend', pressEnd, {passive:false});
+window.addEventListener('touchcancel', pressEnd, {passive:false});
+// 指针事件兜底（兼容触控笔/新式输入）
+canvas.addEventListener('pointerdown', pressStart);
+window.addEventListener('pointermove', pressMove);
+window.addEventListener('pointerup', pressEnd);
+window.addEventListener('pointercancel', pressEnd);
 
 document.getElementById('aimBtn').addEventListener('click', ()=>{
   showAid = !showAid;
