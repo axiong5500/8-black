@@ -2,7 +2,7 @@
 
 > 把桌面上的小图标摆成一局台球，打开浏览器就能打，不用安装、不用下载、不读你电脑里的任何文件。
 
-这是一个纯网页版的休闲台球小游戏：白球在台面上滚动，把一颗颗带图标的球撞进四个角的袋子就算得分。玩法参考了桌面端项目 [desktop-icon-billiards](https://github.com/liuxiaogang-com/desktop-icon-billiards)，并用原生 HTML / CSS / JavaScript 重写成了单文件网页版本。
+这是一个纯网页版的休闲台球小游戏：白球在台面上滚动，把一颗颗带图标的球撞进四个角的袋子就算得分。全部用原生 HTML / CSS / JavaScript 写成，代码集中在一个单文件里。
 
 ---
 
@@ -117,10 +117,6 @@ cd 8-black
 - 代码风格保持原生 JS，不引入框架和打包工具，方便新手直接读。
 
 可以改的方向举例：加音效、换图标主题、调整难度、增加计时排行榜（本地存储）、支持双人轮流击球等等。
-
-## 致谢
-
-玩法与体验参考自 [liuxiaogang-com/desktop-icon-billiards](https://github.com/liuxiaogang-com/desktop-icon-billiards)，本仓库为其网页化重写版本，物理实现与代码均为重新编写。
 
 ## 开源协议
 
