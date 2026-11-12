@@ -1,4 +1,4 @@
-# 桌面图标台球 · Web 版
+# 8-black · 桌面图标台球
 
 > 把桌面上的小图标摆成一局台球，打开浏览器就能打，不用安装、不用下载、不读你电脑里的任何文件。
 
@@ -23,7 +23,7 @@
 
 点这个链接即开即玩，什么都不用装：
 
-**[▶ 在线试玩：https://axiong5500.github.io/desktop-icon-billiards-web/](https://axiong5500.github.io/desktop-icon-billiards-web/)**
+**[▶ 在线试玩：https://axiong5500.github.io/8-black/](https://axiong5500.github.io/8-black/)**
 
 > 首次打开如果是 404 或空白，说明 Pages 还在构建，等一两分钟刷新即可。
 
@@ -73,7 +73,7 @@
 ## 项目结构
 
 ```
-desktop-icon-billiards-web/
+8-black/
 ├── index.html      # 游戏全部代码（HTML + CSS + JS 都在这一个文件里）
 ├── README.md       # 本说明
 └── LICENSE         # MIT 开源协议
@@ -84,8 +84,8 @@ desktop-icon-billiards-web/
 不想下载 ZIP 的话，也可以把仓库克隆下来：
 
 ```bash
-git clone https://github.com/axiong5500/desktop-icon-billiards-web.git
-cd desktop-icon-billiards-web
+git clone https://github.com/axiong5500/8-black.git
+cd 8-black
 # 直接双击 index.html，或用本地静态服务器打开：
 # python -m http.server 8000
 # 浏览器访问 http://localhost:8000
