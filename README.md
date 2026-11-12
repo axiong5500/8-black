@@ -21,7 +21,11 @@
 
 ### 方式一：直接在线玩（最省事）
 
-如果你看到仓库里挂了 Pages / 在线演示链接，点链接即开即玩，什么都不用装。
+点这个链接即开即玩，什么都不用装：
+
+**[▶ 在线试玩：https://axiong5500.github.io/desktop-icon-billiards-web/](https://axiong5500.github.io/desktop-icon-billiards-web/)**
+
+> 首次打开如果是 404 或空白，说明 Pages 还在构建，等一两分钟刷新即可。
 
 ### 方式二：下载到本地玩
 
