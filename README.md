@@ -79,7 +79,7 @@ desktop-icon-billiards-web/
 不想下载 ZIP 的话，也可以把仓库克隆下来：
 
 ```bash
-git clone https://github.com/<你的用户名>/desktop-icon-billiards-web.git
+git clone https://github.com/axiong5500/desktop-icon-billiards-web.git
 cd desktop-icon-billiards-web
 # 直接双击 index.html，或用本地静态服务器打开：
 # python -m http.server 8000
