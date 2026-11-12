@@ -315,6 +315,7 @@ function drawAid(){
   let px=cue.x, py=cue.y, dx=Math.cos(a), dy=Math.sin(a);
   const segs = [];          // 每段 {x1,y1,x2,y2}
   let pocketHit = null;     // 路线经过的袋口
+  let struck = null;         // 被撞到的图标球及其分离方向
   let guard = 0;
 
   while(guard++ < 8){
@@ -333,23 +334,53 @@ function drawAid(){
       const rdx = dx-2*(dx*n.x+dy*n.y)*n.x;
       const rdy = dy-2*(dx*n.x+dy*n.y)*n.y;
       px=hit.x; py=hit.y; dx=rdx; dy=rdy;
+    } else if(hit.ball){
+      // 等质量弹性碰撞：连心线方向为 n，沿 n 方向的速度在两球间交换
+      const bx=hit.ball.x, by=hit.ball.y;
+      const nlen=dist(px,py,bx,by)||1;
+      const nx=(bx-px)/nlen, ny=(by-py)/nlen;
+      const vn=dx*nx+dy*ny;                 // 入射速度在连心线上的分量
+      // 被撞球沿连心线方向走（绿线）
+      struck = {x:bx, y:by, dx:nx, dy:ny};
+      // 白球碰撞后的分离方向（切向保留）：原方向减去连心线方向分量
+      const cdx=dx-vn*nx, cdy=dy-vn*ny;
+      const clen=Math.hypot(cdx,cdy);
+      if(clen>0.05){ px=hit.x; py=hit.y; dx=cdx/clen; dy=cdy/clen; }
+      break;
     } else {
-      // 碰到图标球：白球沿原方向再走一小段示意，被撞球方向用绿线单独画
-      if(hit.ball){
-        const bx=hit.ball.x, by=hit.ball.y;
-        const nx=(bx-px)/dist(px,py,bx,by), ny=(by-py)/dist(px,py,bx,by);
-        ctx.strokeStyle='rgba(90,220,140,.8)';
-        line(bx,by,bx+nx*90,by+ny*90);
-      }
       break;
     }
   }
 
-  // 分段着色：白=出球段，蓝=反弹段；命中袋口时末端标红圈
+  // 分段着色：白=出球段，蓝=反弹/分离段
   segs.forEach((s,i)=>{
     ctx.strokeStyle = i===0 ? 'rgba(255,255,255,.9)' : 'rgba(90,160,255,.85)';
     line(s.x1,s.y1,s.x2,s.y2);
   });
+
+  // 被撞球走向（绿线）：沿两球连心线方向，并继续预测它碰库反弹与进袋。
+  // 起点从球心沿连心线外推一个球半径，避免被白球出球线盖住。
+  if(struck){
+    let sx=struck.x+struck.dx*(BALL_R+4), sy=struck.y+struck.dy*(BALL_R+4), sdx=struck.dx, sdy=struck.dy;
+    ctx.strokeStyle='rgba(90,220,140,.9)';
+    let sg=0;
+    while(sg++ < 5){
+      const hit=traceToCollision(sx,sy,sdx,sdy);
+      line(sx,sy,hit.x,hit.y);
+      for(const p of POCKETS){
+        const near=closestOnSegment(sx,sy,hit.x,hit.y,p.x,p.y);
+        if(dist(near.x,near.y,p.x,p.y)<POCKET_R+BALL_R*0.6){ pocketHit=p; break; }
+      }
+      if(pocketHit) break;
+      if(hit.type==='cushion'){
+        const n=hit.normal;
+        const vn=sdx*n.x+sdy*n.y;
+        sdx=sdx-2*vn*n.x;
+        sdy=sdy-2*vn*n.y;
+        sx=hit.x; sy=hit.y;
+      } else break;
+    }
+  }
 
   if(pocketHit){
     ctx.setLineDash([]);
