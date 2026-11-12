@@ -17,3 +17,6 @@ __pycache__/
 dist/
 *.exe
 *.zip
+
+# 本地备份
+_backup/
