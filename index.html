@@ -21,7 +21,7 @@
   header h1{font-size:22px; letter-spacing:.5px}
   header p{color:var(--muted); font-size:14px; margin-top:4px}
   .stage{position:relative; width:100%; max-width:960px}
-  canvas{display:block; width:100%; height:auto; border-radius:14px; background:#143524; box-shadow:0 18px 50px rgba(0,0,0,.5)}
+  canvas{display:block; width:100%; height:auto; border-radius:14px; background:#143524; box-shadow:0 18px 50px rgba(0,0,0,.5); cursor:crosshair; touch-action:none}
   .hud{
     width:100%; max-width:960px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;
     justify-content:space-between; margin-top:12px; background:var(--panel); border:1px solid var(--line);
@@ -133,6 +133,7 @@ let balls = [];          // 所有球（白球 + 图标球）
 let cue = null;          // 白球引用
 let aiming = false;      // 是否正在蓄力
 let power = 0;           // 当前力度 0..1
+let holdStart = 0;       // 蓄力按下的时间戳
 let aimAngle = 0;
 let showAid = true;
 let shots = 0, potted = 0;
@@ -379,6 +380,10 @@ function ballsMoving(){
 
 /* ================= 主循环 ================= */
 function loop(){
+  // 按住蓄力期间，力度随时间匀速上涨（不依赖鼠标移动）
+  if(aiming){
+    power = Math.min(1, (performance.now()-holdStart)/650);
+  }
   const moving = stepPhysics();
   stepParticles();
   if(startTime!=null && !moving) elapsed = performance.now()-startTime;
@@ -418,33 +423,51 @@ function showOverlay(){
 /* ================= 交互 ================= */
 function canvasPos(e){
   const r = canvas.getBoundingClientRect();
-  return { x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height };
+  const src = (e.touches && e.touches.length) ? e.touches[0] : e;
+  return { x:(src.clientX-r.left)*W/r.width, y:(src.clientY-r.top)*H/r.height };
 }
 
-canvas.addEventListener('mousedown', e=>{
+// 按下：开始蓄力（鼠标左键 / 单指触屏）
+function pressStart(e){
   if(ballsMoving()) return;
+  if(e.cancelable) e.preventDefault();
   const p = canvasPos(e);
   aimAngle = Math.atan2(p.y-cue.y, p.x-cue.x);
-  aiming = true; power = 0;
-});
-canvas.addEventListener('mousemove', e=>{
+  aiming = true;
+  power = 0;
+  holdStart = performance.now();
+}
+// 移动：只更新瞄准方向，力度在主循环里随时间上涨
+function pressMove(e){
   if(!cue.active) return;
   const p = canvasPos(e);
   aimAngle = Math.atan2(p.y-cue.y, p.x-cue.x);
-  if(aiming) power = Math.min(1, power+0.03);
-});
-window.addEventListener('mouseup', ()=>{
+}
+// 松开：出杆
+function pressEnd(e){
   if(!aiming) return;
+  if(e && e.cancelable) e.preventDefault();
   aiming = false;
-  if(power>0.05 && !ballsMoving()){
-    const v = MAX_POWER*power;
+  if(!ballsMoving()){
+    // 轻点也给一个最小力度，避免点一下完全没反应；按住越久力度越大
+    const p = Math.max(power, 0.25);
+    const v = MAX_POWER*p;
     cue.vx = Math.cos(aimAngle)*v;
     cue.vy = Math.sin(aimAngle)*v;
     shots++;
     if(startTime==null) startTime = performance.now();
   }
   power = 0;
-});
+}
+
+canvas.addEventListener('mousedown', pressStart);
+canvas.addEventListener('mousemove', pressMove);
+window.addEventListener('mouseup', pressEnd);
+// 触屏等价路径
+canvas.addEventListener('touchstart', pressStart, {passive:false});
+canvas.addEventListener('touchmove', pressMove, {passive:false});
+canvas.addEventListener('touchend', pressEnd, {passive:false});
+canvas.addEventListener('touchcancel', pressEnd, {passive:false});
 
 document.getElementById('aimBtn').addEventListener('click', ()=>{
   showAid = !showAid;
